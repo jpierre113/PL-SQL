@@ -1,0 +1,5 @@
+insert into dbuser (user_id, username, age, state1) values (1, 'CarlosRamos', 32, 'Nevada');
+insert into dbuser (user_id, username, age, state1) values (2, 'DanielleLang', 27, 'Ohio');
+insert into dbuser (user_id, username, age, state1) values (3, 'AmyJohns', 35, 'Nevada');
+insert into dbuser (user_id, username, age, state1) values (4, 'DavidReeves', 32, 'Washington');
+insert into dbuser (user_id, username, age, state1) values (5, 'AlexGreen', 29, 'California');
