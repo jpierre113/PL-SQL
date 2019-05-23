@@ -1,0 +1,237 @@
+ --  Customer Table
+Create Custinfo:
+create table custinfo (
+fullname varchar2(15),
+address varchar2(15),
+city varchar2(15),
+state varchar2(2),
+telephone varchar2 (10),
+custid number(2),
+constraint custinfo_pk primary key (custid));
+
+--¬ Flights Table
+create table flights (
+flightid number(5),
+flightfrom varchar2(15),
+flightto varchar2(15),
+fare number (3),
+flightdate varchar2(11),
+seatsleft number(2),
+constraint flights_pk primary key (flightid));
+
+-- Payment Table
+create table payment (
+fullname varchar2(15),
+credit number(16),
+ssc number(3),
+paymentid number(10),
+constraint payment_pk primary key (paymentid));
+
+-- Reservation Table
+create table reservation (
+fullname varchar2(15),
+departdate varchar2(11),
+paymentid number(10),
+flightid number(5),
+resid number(5),
+constraint reservation_pk primary key (resid),
+constraint fk_custinfo foreign key (custid) REFERENCES custinfo(custid),
+constraint fk_flights foreign key (flightid) REFERENCES flights(flightid),
+constraint fk_payment foreign key (paymentid) REFERENCES payment(paymentid));
+
+--Insert values in Custinfo:
+insert into custinfo (fullname, address, city, state, telephone, custid) values ( 'Amy Johns', '123 Austin St', 'Forest Hills', 'NY','7183230101',01);
+insert into custinfo (fullname, address, city, state, telephone, custid) values ( 'Greg Manning', '44 Main St', 'Flushing', 'NY','9172518200',02);
+
+--Insert into Flights:
+insert into flights (flightid, flightfrom, flightto, fare, flightdate, seatsleft) values (11111, 'JFK', 'Chicago',300, '10-MAY-2018',10);
+insert into flights ( flightid, flightfrom, flightto, fare, flightdate, seatsleft) values (22222, 'JFK', 'Chicago',400, '10-MAY-2018',40);
+insert into flights ( flightid, flightfrom, flightto, fare, flightdate, seatsleft) values (33333, 'JFK', 'Chicago',200, '10-MAY-2018',2);
+insert into flights ( flightid, flightfrom, flightto, fare, flightdate, seatsleft) values (44444, 'JFK', 'Chicago',100, '10-MAY-2018',56);
+
+--Insert into Payment:
+insert into payment (fullname, credit, ssc, paymentid) values ( 'Amy Johns', 1234567890123456, 098, 1234567890);
+insert into payment (fullname, credit, ssc, paymentid) values ( 'Greg Manning', 2042316987530985, 123, 1234567891);
+
+--Insert into Reservation:
+insert into reservation (fullname, departdate, paymentid, flightid, resid) values ( 'Amy Johns', '10-MAY-2018', 1234567890, 11111,00001);
+insert into reservation (fullname, departdate, paymentid, flightid, resid) values ( 'Greg Manning', '10-MAY-2018', 1234567891, 22222,00002);
+
+Procedures:
+-- customer registers and is given an id number
+create sequence cust_counter
+start with 3
+increment by 1;
+
+set serveroutput on
+create or replace procedure registerCust(v_fullname custinfo.fullname%type,
+v_address custinfo.address%type,
+v_city custinfo.city%type,
+v_state custinfo.state%type,
+v_telephone custinfo.telephone%type)
+is
+begin
+insert into custinfo values (v_fullname, v_address, v_city, v_state, v_telephone, cust_counter.NEXTVAL);
+dbms_output.put_line ( ' The new customer has been successfully registered, and their Customer ID is: ' || cust_counter.CURRVAL);
+end;
+execute registerCust('&Enter_name', '&Enter_address', '&Enter_city', '&Enter_state', '&Enter_telephone_number');
+
+--#2 customer search for a flight by giving the source, destination and date
+set serveroutput on
+create or replace procedure searchFlight(v_flightfrom flights.flightfrom%type, v_flightto flights.flightto%type, v_flightdate flights.flightdate%type)
+is
+v_flightid flights.flightid%type;
+v_fare flights.fare%type;
+v_seatsleft flights.seatsleft%type;
+
+cursor find_flight is select flightfrom, flightto,  flightdate, from flights where flightid = v_flightid;
+begin
+open find_flight;
+loop
+fetch find_flight into v_flightfrom, v_flightto,  v_flightdate;
+exit when find_flight%NOTFOUND;
+dbms_output.put_line ( 'Flight ID: ' || v_flightid || '  ' || 'Source: ' || v_flightto || '  ' ||  'Destination: ' || v_flightto || '  ' || 'Date: ' || v_flightdate);
+end loop;
+close find_flight;
+end;
+
+execute searchFlight('JFK', ‘Chicago’, ‘10-MAY-2018’);
+
+--#3 customer makes a reservation by giving the number of passengers, and the flight number
+set serveroutput on
+create sequence resid_seq
+start with 2
+increment by 1; 
+create or replace procedure makeRes(v_flightid in reservation.flightid%type, v_seatsleft in flights.seatsleft%type, v_custid in reservation.custid%type)
+is
+begin
+insert into reservation values (v_flightid, resid_seq.NEXTVAL,v_seatsleft, v_custid);
+dbms_output.put_line ('Reservation successful');
+dbms_output.put_line ('Flight ID: ' || v_flightid);
+dbms_output.put_line ('Number of Seats: ' || v_seatsleft);
+dbms_output.put_line ('Customer ID: ' || v_custid);
+end;
+
+execute makeRes(33333,1,3);
+
+--#4 customer can view all of their reservations by entering their ID
+set serveroutput on
+create or replace procedure viewRes(v_custid reservation.custid%type)
+is
+v_resid reservation.resid%type;
+v_flightid reservation.flightid%type;
+v_seatsleft reservation.seatsleft%type;
+cursor view_Res is select resid, flightid,seatsleft from reservation where custid = v_custid;
+begin 
+open view_Res;
+loop
+fetch view_Res into v_resid, v_flightid, v_seatsleft;
+exit when view_Res%NOTFOUND;
+dbms_output.put_line ( 'Reservation ID: ' || v_resid || '  ' || 'FlightID: ' || v_flightid || '  ' ||  'Seats Reserved: ' || v_seatsleft);
+end loop;
+close view_Res;
+end;
+
+execute viewRes(2);
+-- view all flight details from a location
+set serveroutput on
+create or replace procedure adminFlight(v_flightfrom flights.flightfrom%type)
+is
+v_flightid flights.flightid%type;
+v_flightto flights.flightto%type;
+v_fare flights.fare%type;
+v_flightdate flights.flightdate%type;
+v_seatsleft flights.seatsleft%type;
+
+cursor find_flight is select flightid, flightto, fare, flightdate, seatsleft from flights where flightfrom = v_flightfrom;
+begin
+open find_flight;
+loop
+fetch find_flight into v_flightid, v_flightto, v_fare, v_flightdate, v_seatsleft;
+exit when find_flight%NOTFOUND;
+dbms_output.put_line ( 'Flight ID: ' || v_flightid || '  ' || 'Destination: ' || v_flightto || '  ' ||  'Price: $' || v_fare  || '  ' || 'Date: ' || v_flightdate || '  ' || 'Seats Remaining: ' || v_seatsleft);
+end loop;
+close find_flight;
+end;
+execute adminFlight('JFK');
+
+-- change the fare of any flight (based on Flight ID)
+set serveroutput on
+create or replace procedure updateFare (v_fare in flights.fare%type, v_flightid flights.flightid%type)
+is
+begin
+
+update flights
+set fare = v_fare
+where flightid = v_flightid;
+end;
+execute updateFare (999, 11111);
+-- see all the reservations on a given flight
+set serveroutput on
+create or replace procedure findRes (v_flightid custinfo.custid%type)
+is
+v_fullname reservation.fullname%type;
+v_departdate reservation.departdate%type;
+v_paymentid reservation.paymentid%type;
+v_resid reservation.resid%type;
+
+cursor Resinfo is select fullname, departdate, paymentid, resid from reservation where flightid = v_flightid;
+begin
+open Resinfo;
+loop
+fetch Resinfo into v_fullname, v_departdate, v_paymentid, v_resid;
+exit when Resinfo%NOTFOUND;
+dbms_output.put_line(v_fullname);
+dbms_output.put_line(v_departdate);
+dbms_output.put_line(v_paymentid);
+dbms_output.put_line(v_resid);
+end loop;
+close Resinfo;
+end;
+
+execute findRes (22222);
+
+-- view any customer details (given the ID of the customer)
+set serveroutput on
+create or replace procedure findCust (v_custid custinfo.custid%type)
+is
+v_fullname custinfo.fullname%type;
+v_address custinfo.address%type;
+v_city custinfo.city%type;
+v_state custinfo.state%type;
+v_telephone custinfo.telephone%type;
+
+cursor find_cust is select fullname, address, city, state, telephone from custinfo where custid = v_custid;
+begin
+open find_cust;
+loop
+fetch find_cust into v_fullname, v_address, v_city, v_state, v_telephone;
+exit when find_cust%NOTFOUND;
+dbms_output.put_line(v_fullname);
+dbms_output.put_line(v_address);
+dbms_output.put_line(v_city);
+dbms_output.put_line(v_state);
+dbms_output.put_line(v_telephone);
+end loop;
+close find_cust;
+end;
+
+--  Add a new flight
+set serveroutput on
+create or replace procedure addFlight(
+v_flightid flights.flightid%type,
+v_flightfrom flights.flightfrom%type,
+v_flightto flights.flightto%type,
+v_fare flights.fare%type,
+v_flightdate flights.flightdate%type,
+v_seatsleft flights.seatsleft%type)
+is
+begin
+INSERT INTO FLIGHTS (flightid, flightfrom, flightto, fare, flightdate, seatsleft) VALUES(v_flightid, v_flightfrom,v_flightto,v_fare, v_flightdate,v_seatsleft);
+    dbms_output.put_line('New flight has been added');
+    dbms_output.put_line('FLIGHT ID: '||v_flightid||' FROM: '||v_flightfrom||' DESTINATION: '||v_flightto||
+    ' DATE: '||v_flightdate||' FARE: $'|| v_fare||' AVAILABE SEATS: '||v_seatsleft);
+end;
+
+
+EXECUTE addFlight(55555, 'JFK', 'San Diego', 700,  '31-DEC-18', 25);
