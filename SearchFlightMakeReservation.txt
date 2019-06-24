@@ -1,0 +1,45 @@
+--#2 customer
+set serveroutput on
+create or replace procedure searchFlight(v_flightfrom flights.flightfrom%type)
+is
+v_flightid flights.flightid%type;
+v_flightto flights.flightto%type;
+v_fare flights.fare%type;
+v_flightdate flights.flightdate%type;
+v_seatsleft flights.seatsleft%type;
+
+cursor find_flight is select flightid, flightto, fare, flightdate, seatsleft from flights where flightfrom = v_flightfrom;
+begin
+open find_flight;
+loop
+fetch find_flight into v_flightid, v_flightto, v_fare, v_flightdate, v_seatsleft;
+exit when find_flight%NOTFOUND;
+dbms_output.put_line ( 'Flight ID: ' || v_flightid || '  ' || 'Destination: ' || v_flightto || '  ' ||  'Price: $' || v_fare  || '  ' || 'Date: ' || v_flightdate || '  ' || 'Seats Remaining: ' || v_seatsleft);
+end loop;
+close find_flight;
+end;
+
+
+--#3 customer
+
+set serveroutput on
+create or replace procedure makeRes(v_flightid reservation.flightid%type,
+v_seatsleft reservation.seatsleft%type)
+is
+v_fullname reservation.fullname%type;
+v_departdate reservation.departdate%type;
+v_paymentid reservation.paymentid%type;
+v_resid reservation.resid%type;
+
+cursor flightres is select v_fullname, v_departdate, v_paymentid,v_resid from reservation where flightid = v_flightid and seatsleft = v_seatsleft;
+begin
+open flightres;
+loop
+fetch flightres into v_fullname, v_departdate, v_paymentid, v_resid;
+exit when flightres%NOTFOUND;
+dbms_output.put_line ('Your Reservation is complete');
+end loop;
+close flightres;
+end;
+
+execute makeRes(33333, 2);
