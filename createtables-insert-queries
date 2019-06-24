@@ -1,0 +1,59 @@
+ --  Customer Table
+Create Custinfo:
+create table custinfo (
+fullname varchar2(15),
+address varchar2(15),
+city varchar2(15),
+state varchar2(2),
+telephone varchar2 (10),
+custid number(2),
+constraint custinfo_pk primary key (custid));
+
+--¬ Flights Table
+create table flights (
+flightid number(5),
+flightfrom varchar2(15),
+flightto varchar2(15),
+fare number (3),
+flightdate varchar2(11),
+seatsleft number(2),
+constraint flights_pk primary key (flightid));
+
+-- Payment Table
+create table payment (
+fullname varchar2(15),
+credit number(16),
+ssc number(3),
+paymentid number(10),
+constraint payment_pk primary key (paymentid));
+
+-- Reservation Table
+create table reservation (
+fullname varchar2(15),
+departdate varchar2(11),
+paymentid number(10),
+flightid number(5),
+resid number(5),
+constraint reservation_pk primary key (resid),
+constraint fk_custinfo foreign key (custid) REFERENCES custinfo(custid),
+constraint fk_flights foreign key (flightid) REFERENCES flights(flightid),
+constraint fk_payment foreign key (paymentid) REFERENCES payment(paymentid));
+
+--Insert values in Custinfo:
+insert into custinfo (fullname, address, city, state, telephone, custid) values ( 'Amy Johns', '123 Austin St', 'Forest Hills', 'NY','7183230101',01);
+insert into custinfo (fullname, address, city, state, telephone, custid) values ( 'Greg Manning', '44 Main St', 'Flushing', 'NY','9172518200',02);
+
+--Insert into Flights:
+insert into flights (flightid, flightfrom, flightto, fare, flightdate, seatsleft) values (11111, 'JFK', 'Chicago',300, '10-MAY-2018',10);
+insert into flights ( flightid, flightfrom, flightto, fare, flightdate, seatsleft) values (22222, 'JFK', 'Chicago',400, '10-MAY-2018',40);
+insert into flights ( flightid, flightfrom, flightto, fare, flightdate, seatsleft) values (33333, 'JFK', 'Chicago',200, '10-MAY-2018',2);
+insert into flights ( flightid, flightfrom, flightto, fare, flightdate, seatsleft) values (44444, 'JFK', 'Chicago',100, '10-MAY-2018',56);
+
+--Insert into Payment:
+insert into payment (fullname, credit, ssc, paymentid) values ( 'Amy Johns', 1234567890123456, 098, 1234567890);
+insert into payment (fullname, credit, ssc, paymentid) values ( 'Greg Manning', 2042316987530985, 123, 1234567891);
+
+--Insert into Reservation:
+insert into reservation (fullname, departdate, paymentid, flightid, resid) values ( 'Amy Johns', '10-MAY-2018', 1234567890, 11111,00001);
+insert into reservation (fullname, departdate, paymentid, flightid, resid) values ( 'Greg Manning', '10-MAY-2018', 1234567891, 22222,00002);
+
